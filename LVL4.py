@@ -21,32 +21,35 @@
 # ID школы:
 
 import sqlite3
-connection = sqlite3.connect("teacher.db")
-cursor = connection.cursor()
+con = sqlite3.connect("teatchers.db")
+cursor = con.cursor()
 
-cursor.execute('''
-CREATE TABLE IF NOT EXISTS Students(
-Student_Id INTEGER,
-Student_Name Text,
-School_Id Primary Key
-) 
-''')
+with con:
+    con.execute("""
+    CREATE TABLE IF NOT EXISTS Students (
+        Student_Id INTEGER,
+        Student_Name Text,
+        School_Id INTEGER Primary Key
+);
+    """)
 
-sqlquery = """INSERT INTO Students(Student_Id, Student_Name, School_Id)
-values
-(201, "Иван", 1),
-(202, "Петр", 2),
-(203, "Анастасия", 3),
-(204, "Игорь", 4)
+sqlquery = "REPLACE INTO Students (Student_Id, Student_Name, School_Id) values(?, ?, ?)"
+values = [
+    (201, "Иван", 1),
+    (202, "Петр", 2),
+    (203, "Анастасия", 3),
+    (204, "Игорь", 4)]
 
-"""
+with con:
+    con.executemany(sqlquery, values)
 
-cursor.execute(sqlquery)
-connection.commit()
-connection.close()
+with con:
+    values = con.execute("SELECT * FROM Students")
+    for row in values:
+        print(row)
 
 def get_connection():
-  connection = sqlite3.connect('teacher.db')
+  connection = sqlite3.connect('teatchers.db')
   return connection
 
 def close_connection(connection):
@@ -54,7 +57,6 @@ def close_connection(connection):
     connection.close()
 
 def get_school(Student_Id):
-  try:
     con = get_connection()
     cursor = con.cursor()
     sqlquery = 'SELECT * FROM Students WHERE Student_Id = ?'
@@ -64,12 +66,7 @@ def get_school(Student_Id):
     for row in school_info:
       print("ID школы:", row[2])
 
-  except (Exception, sqlite3.Error) as error:
-      print("Ошибка вида ", error)
-
-
 def get_student(student_id):
-  try:
     con = get_connection()
     cursor = con.cursor()
     sqlquery1 = 'SELECT * FROM Students WHERE Student_Id = ?'
@@ -80,8 +77,6 @@ def get_student(student_id):
       print("ID студента:", row[0])
       print ("Имя студента:", row[1])
     close_connection(con)
-  except (Exception, sqlite3.Error) as error:
-    print ("Ошибка вида ", error)
 
 y = int(input('Введи ID студента:'))
 get_school(y)
